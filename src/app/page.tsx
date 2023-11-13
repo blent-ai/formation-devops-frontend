@@ -1,9 +1,6 @@
 'use client'
 import React from "react";
-import { Card } from "@/components/ui/card";
 import useSWR from 'swr'
-
-const fetcher = (...args) => fetch(...args).then(res => res.json())
 
 type TweetProps = {
   tweet: string;
@@ -124,7 +121,7 @@ const Tweet: React.FC<TweetProps> = (props) => {
 
 export default function Home() {
 
-  const tweetsQuery = useSWR("http://localhost:5000/tweets?content=", fetcher);
+  const tweetsQuery = useSWR<TweetProps[]>(`${process.env.NEXT_PUBLIC_BACKEND_URL}/tweets?content=`, (url: string) => fetch(url).then(res => res.json()));
   
   const tweets = tweetsQuery.data;
   const isLoading = tweetsQuery.isLoading;
@@ -132,12 +129,15 @@ export default function Home() {
   return (
     <main className="flex min-h-screen flex-col items-center justify-between p-24">
       {tweets !== undefined && tweets.length > 0
-      ? tweets.map(x => (
-          <Tweet {...x} />
-        ))
+      ? <div className="flex flex-col gap-y-5">
+          <p className="text-xl font-semibold text-black text-center">Derniers Tweets</p>
+          {tweets.map((x, i) => (
+            <Tweet key={i} {...x} />
+          ))}
+        </div>
       : isLoading
         ? <p className="text-blue-500 text-3xl font-semibold animate-pulse">Chargement en cours...</p>
-        : <p className="text-red-500 text-3xl font-semibold animate-pulse">Une erreur est survenue.</p>}
+        : <p className="text-red-500 text-3xl font-semibold">Une erreur est survenue.</p>}
     </main>
   )
 }
